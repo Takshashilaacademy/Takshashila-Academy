@@ -292,11 +292,11 @@ export default function Navbar() {
 
             {/* Mobile call */}
             <a
-              href="tel:6268274213"
+              href="tel:7808491281"
               className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm font-black text-green-700"
             >
               <Phone size={17} />
-              Call: 6268274213
+              Call: 7808491281
             </a>
 
           </div>

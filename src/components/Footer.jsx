@@ -180,10 +180,10 @@ export default function Footer() {
               </a>
 
 
-              {/* Sujeet */}
+              {/* Shrawan  */}
 
               <a
-                href="tel:6268274213"
+                href="tel:7804891281"
                 className="group flex items-start gap-3"
               >
 
@@ -198,11 +198,11 @@ export default function Footer() {
                   </p>
 
                   <p className="mt-1 text-sm font-bold text-slate-200 group-hover:text-white">
-                    Sujeet Kumar
+                    Shrawan Suryavanshi
                   </p>
 
                   <p className="text-sm text-slate-300">
-                    6268274213
+                    7804891281
                   </p>
 
                 </div>
