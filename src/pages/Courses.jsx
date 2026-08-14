@@ -30,6 +30,8 @@ import {
   API_URL,
 } from "../config/api.js";
 
+import SEO from "../components/SEO.jsx";
+
 
 /* =========================================================
    COURSE FEATURES
@@ -542,7 +544,14 @@ export default function Courses() {
   ======================================================= */
 
   return (
-    <main className="min-h-screen bg-[#f7f9fc]">
+    <>
+      <SEO
+        title="Courses | Competitive Exam Courses"
+        description="Explore Takshashila Academy courses for SSC and other competitive exams with recorded video classes, notes, PDFs and structured exam preparation."
+        path="/courses"
+      />
+
+      <main className="min-h-screen bg-[#f7f9fc]">
 
       {/* =================================================
           HERO
@@ -1253,6 +1262,7 @@ export default function Courses() {
       </section>
 
     </main>
+    </>
   );
 }
 

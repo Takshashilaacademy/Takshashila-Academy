@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 
 import { API_BASE } from "../config/api.js";
+import SEO from "../components/SEO.jsx";
+
 
 const courseFeatures = [
   "Complete Video Classes",
@@ -20,6 +22,7 @@ const courseFeatures = [
   "Structured Recorded Classes",
   "Exam-oriented Preparation",
 ];
+
 
 const fallbackColors = [
   "from-blue-900 via-blue-800 to-indigo-900",
@@ -29,6 +32,7 @@ const fallbackColors = [
   "from-slate-900 via-slate-800 to-blue-900",
   "from-orange-800 via-orange-700 to-red-700",
 ];
+
 
 function getDiscount(oldPrice, price) {
   const oldValue = Number(oldPrice);
@@ -51,6 +55,7 @@ function getDiscount(oldPrice, price) {
     )
   );
 }
+
 
 function normalizeCourse(course, index) {
   const id =
@@ -107,10 +112,12 @@ function normalizeCourse(course, index) {
   };
 }
 
+
 export default function Courses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
 
   useEffect(() => {
     let isMounted = true;
@@ -208,6 +215,7 @@ export default function Courses() {
     };
   }, []);
 
+
   const courseCountLabel =
     useMemo(() => {
       if (loading) {
@@ -224,8 +232,20 @@ export default function Courses() {
       loading,
     ]);
 
+
   return (
     <main className="min-h-screen bg-slate-50">
+
+      {/* =====================================================
+          HOME PAGE SEO
+      ===================================================== */}
+
+      <SEO
+        title="Competitive Exam Preparation"
+        description="Takshashila Academy provides structured preparation for CG Vyapam, CGPSC, SSC, CG Police, Banking, Railway, Agniveer and Teacher Bharti competitive examinations."
+        path="/"
+      />
+
 
       {/* =====================================================
           PAGE HEADER
@@ -251,11 +271,13 @@ export default function Courses() {
 
           </div>
 
+
           {/* Small Stats */}
 
           <div className="mt-9 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
 
             <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+
               <BookOpen
                 className="text-yellow-400"
                 size={22}
@@ -268,9 +290,12 @@ export default function Courses() {
               <p className="text-xs text-slate-400">
                 Exam Categories
               </p>
+
             </div>
 
+
             <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+
               <PlayCircle
                 className="text-yellow-400"
                 size={22}
@@ -283,9 +308,12 @@ export default function Courses() {
               <p className="text-xs text-slate-400">
                 Classes
               </p>
+
             </div>
 
+
             <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+
               <FileText
                 className="text-yellow-400"
                 size={22}
@@ -298,9 +326,12 @@ export default function Courses() {
               <p className="text-xs text-slate-400">
                 Study Material
               </p>
+
             </div>
 
+
             <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+
               <ShieldCheck
                 className="text-yellow-400"
                 size={22}
@@ -313,12 +344,14 @@ export default function Courses() {
               <p className="text-xs text-slate-400">
                 Student Access
               </p>
+
             </div>
 
           </div>
 
         </div>
       </section>
+
 
       {/* =====================================================
           COURSES
@@ -352,6 +385,7 @@ export default function Courses() {
 
         </div>
 
+
         {/* =====================================================
             LOADING STATE
         ===================================================== */}
@@ -374,6 +408,7 @@ export default function Courses() {
 
           </div>
         )}
+
 
         {/* =====================================================
             ERROR STATE
@@ -412,6 +447,7 @@ export default function Courses() {
           </div>
         )}
 
+
         {/* =====================================================
             EMPTY STATE
         ===================================================== */}
@@ -440,6 +476,7 @@ export default function Courses() {
 
             </div>
           )}
+
 
         {/* =====================================================
             COURSE GRID
@@ -508,6 +545,7 @@ export default function Courses() {
 
                       </div>
 
+
                       {/* Course Body */}
 
                       <div className="p-6">
@@ -515,6 +553,7 @@ export default function Courses() {
                         <p className="min-h-[72px] text-sm leading-6 text-slate-600">
                           {course.description}
                         </p>
+
 
                         {/* Course Features */}
 
@@ -542,6 +581,7 @@ export default function Courses() {
 
                         </div>
 
+
                         {/* Info */}
 
                         <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-5 text-xs font-semibold text-slate-500">
@@ -557,6 +597,7 @@ export default function Courses() {
                           </div>
 
                         </div>
+
 
                         {/* Price */}
 
@@ -575,14 +616,10 @@ export default function Courses() {
 
                         </div>
 
+
                         {/* Buttons */}
 
                         <div className="mt-5 grid grid-cols-2 gap-3">
-
-                          {/* IMPORTANT:
-                              Actual App route is:
-                              /course/:courseId
-                          */}
 
                           <Link
                             to={`/course/${course.id}`}
@@ -617,6 +654,7 @@ export default function Courses() {
 
       </section>
 
+
       {/* =====================================================
           PURCHASE FLOW INFO
       ===================================================== */}
@@ -642,6 +680,7 @@ export default function Courses() {
 
           </div>
 
+
           <div className="mt-10 grid gap-5 md:grid-cols-3">
 
             {/* Step 1 */}
@@ -662,6 +701,7 @@ export default function Courses() {
 
             </div>
 
+
             {/* Step 2 */}
 
             <div className="relative rounded-2xl border border-slate-200 bg-slate-50 p-6">
@@ -679,6 +719,7 @@ export default function Courses() {
               </p>
 
             </div>
+
 
             {/* Step 3 */}
 
@@ -703,6 +744,7 @@ export default function Courses() {
 
         </div>
       </section>
+
 
       {/* =====================================================
           SECURITY NOTICE

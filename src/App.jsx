@@ -12,6 +12,10 @@ import Home from "./pages/Home";
 import Courses from "./pages/Courses";
 import CourseDetails from "./pages/CourseDetails";
 
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
+import RefundPolicy from "./pages/RefundPolicy";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -25,55 +29,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminCreateCourse from "./pages/AdminCreateCourse";
 import AdminCourseContent from "./pages/AdminCourseContent";
 
-import React from "react";
 import { isStudentLoggedIn } from "./utils/authStorage.js";
 
-
-class AppErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, info) {
-    console.error("Application render error:", error, info);
-  }
-
-  handleReload = () => {
-    window.location.reload();
-  };
-
-  render() {
-    if (!this.state.hasError) return this.props.children;
-
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-16">
-        <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 text-center shadow-xl shadow-slate-200/50 sm:p-9">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-sm font-black text-red-700">
-            Error
-          </div>
-          <h1 className="mt-5 text-2xl font-black tracking-tight text-slate-900">
-            Something went wrong
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            Please reload the page. Your account and course data are kept safe on the server.
-          </p>
-          <button
-            type="button"
-            onClick={this.handleReload}
-            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#071b41] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/10 hover:bg-[#0b2557]"
-          >
-            Reload Page
-          </button>
-        </section>
-      </main>
-    );
-  }
-}
 
 /* =========================================================
    STUDENT ROUTE GUARD
@@ -85,7 +42,8 @@ function StudentRoute({ children }) {
   const isLoggedIn = isStudentLoggedIn();
 
   if (!isLoggedIn) {
-    const redirect = `${location.pathname}${location.search}`;
+    const redirect =
+      `${location.pathname}${location.search}`;
 
     return (
       <Navigate
@@ -97,6 +55,7 @@ function StudentRoute({ children }) {
 
   return children;
 }
+
 
 /* =========================================================
    ADMIN ROUTE GUARD
@@ -110,12 +69,18 @@ function AdminRoute({ children }) {
 
   try {
     token =
-      localStorage.getItem("takshashila_admin_token") || "";
+      localStorage.getItem(
+        "takshashila_admin_token"
+      ) || "";
 
     const rawAdmin =
-      localStorage.getItem("takshashila_admin");
+      localStorage.getItem(
+        "takshashila_admin"
+      );
 
-    admin = rawAdmin ? JSON.parse(rawAdmin) : null;
+    admin = rawAdmin
+      ? JSON.parse(rawAdmin)
+      : null;
   } catch (error) {
     console.error(
       "Unable to read admin authentication data:",
@@ -132,7 +97,8 @@ function AdminRoute({ children }) {
     admin.role === "admin";
 
   if (!isValidAdmin) {
-    const redirect = `${location.pathname}${location.search}`;
+    const redirect =
+      `${location.pathname}${location.search}`;
 
     return (
       <Navigate
@@ -145,6 +111,7 @@ function AdminRoute({ children }) {
   return children;
 }
 
+
 /* =========================================================
    404 PAGE
 ========================================================= */
@@ -153,6 +120,7 @@ function NotFound() {
   return (
     <section className="flex min-h-[70vh] items-center justify-center px-6 py-20">
       <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl shadow-slate-200/50 sm:p-10">
+
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-100 text-3xl font-bold text-slate-700">
           404
         </div>
@@ -162,8 +130,8 @@ function NotFound() {
         </h1>
 
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500 sm:text-base">
-          The page you are looking for does not exist or may
-          have been moved.
+          The page you are looking for does not exist or
+          may have been moved.
         </p>
 
         <a
@@ -172,10 +140,12 @@ function NotFound() {
         >
           Go to Home
         </a>
+
       </div>
     </section>
   );
 }
+
 
 /* =========================================================
    APP
@@ -190,17 +160,20 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+
       {/* =================================================
           PUBLIC NAVBAR
       ================================================= */}
 
       {!isAdminArea && <Navbar />}
 
+
       {/* =================================================
-          APPLICATION ROUTES
+          ROUTES
       ================================================= */}
 
       <main className="min-h-[calc(100vh-1px)]">
+
         <Routes>
 
           {/* =================================================
@@ -221,6 +194,27 @@ function App() {
             path="/course/:courseId"
             element={<CourseDetails />}
           />
+
+
+          {/* =================================================
+              LEGAL ROUTES
+          ================================================= */}
+
+          <Route
+            path="/privacy-policy"
+            element={<PrivacyPolicy />}
+          />
+
+          <Route
+            path="/terms"
+            element={<Terms />}
+          />
+
+          <Route
+            path="/refund-policy"
+            element={<RefundPolicy />}
+          />
+
 
           {/* =================================================
               STUDENT AUTH ROUTES
@@ -246,6 +240,7 @@ function App() {
             element={<ResetPassword />}
           />
 
+
           {/* =================================================
               STUDENT PROTECTED ROUTES
           ================================================= */}
@@ -268,6 +263,7 @@ function App() {
             }
           />
 
+
           {/* =================================================
               ADMIN AUTH
           ================================================= */}
@@ -276,6 +272,7 @@ function App() {
             path="/admin/login"
             element={<AdminLogin />}
           />
+
 
           {/* =================================================
               ADMIN PROTECTED ROUTES
@@ -308,8 +305,9 @@ function App() {
             }
           />
 
+
           {/* =================================================
-              FALLBACK / 404
+              404
           ================================================= */}
 
           <Route
@@ -318,20 +316,19 @@ function App() {
           />
 
         </Routes>
+
       </main>
+
 
       {/* =================================================
           PUBLIC FOOTER
       ================================================= */}
 
       {!isAdminArea && <Footer />}
+
     </div>
   );
 }
-export default function AppWithErrorBoundary() {
-  return (
-    <AppErrorBoundary>
-      <App />
-    </AppErrorBoundary>
-  );
-}
+
+
+export default App;

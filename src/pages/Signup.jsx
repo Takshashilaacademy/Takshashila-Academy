@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { API_URL } from "../config/api.js";
+import SEO from "../components/SEO.jsx";
 
 import {
   notifyStudentAuthChanged,
@@ -572,6 +573,16 @@ export default function Signup() {
 
   return (
     <main className="min-h-[calc(100vh-72px)] overflow-hidden bg-slate-50">
+
+      {/* =================================================
+          SIGNUP PAGE SEO
+      ================================================= */}
+
+      <SEO
+        title="Student Signup"
+        description="Create your Takshashila Academy student account and access purchased courses, recorded lectures, notes and study material."
+        path="/signup"
+      />
       {/* =================================================
           BACKGROUND DECORATION
       ================================================= */}

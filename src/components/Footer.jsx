@@ -2,13 +2,10 @@ import { Link } from "react-router-dom";
 import {
   ArrowRight,
   BookOpen,
-  Facebook,
-  Instagram,
   Mail,
   MapPin,
   Phone,
   ShieldCheck,
-  Youtube,
 } from "lucide-react";
 
 const exams = [
@@ -21,12 +18,6 @@ const exams = [
   "Agniveer",
   "Teacher Bharti",
 ];
-
-const socialLinks = {
-  youtube: "https://www.youtube.com/",
-  facebook: "https://www.facebook.com/",
-  instagram: "https://www.instagram.com/",
-};
 
 export default function Footer() {
   return (
@@ -75,33 +66,8 @@ export default function Footer() {
               के लिए Takshashila Academy से जुड़ें।
             </p>
 
-            {/* =================================================
-                SOCIAL LINKS
-            ================================================= */}
-
-            <div className="mt-6 flex gap-2">
-
-              <SocialLink
-                href={socialLinks.youtube}
-                icon={<Youtube size={18} />}
-                label="YouTube"
-              />
-
-              <SocialLink
-                href={socialLinks.facebook}
-                icon={<Facebook size={18} />}
-                label="Facebook"
-              />
-
-              <SocialLink
-                href={socialLinks.instagram}
-                icon={<Instagram size={18} />}
-                label="Instagram"
-              />
-
-            </div>
-
           </div>
+
 
           {/* =================================================
               QUICK LINKS
@@ -144,6 +110,7 @@ export default function Footer() {
 
           </div>
 
+
           {/* =================================================
               EXAMS
           ================================================= */}
@@ -170,6 +137,7 @@ export default function Footer() {
 
           </div>
 
+
           {/* =================================================
               CONTACT
           ================================================= */}
@@ -188,7 +156,7 @@ export default function Footer() {
                 href="https://www.google.com/maps/search/?api=1&query=College+Road+Pratappur+Surajpur+Chhattisgarh"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-3 group"
+                className="group flex items-start gap-3"
               >
 
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-red-400">
@@ -211,11 +179,12 @@ export default function Footer() {
 
               </a>
 
+
               {/* Sujeet */}
 
               <a
                 href="tel:6268274213"
-                className="flex items-start gap-3 group"
+                className="group flex items-start gap-3"
               >
 
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-green-400">
@@ -240,11 +209,12 @@ export default function Footer() {
 
               </a>
 
+
               {/* Manoj */}
 
               <a
                 href="tel:7354363973"
-                className="flex items-start gap-3 group"
+                className="group flex items-start gap-3"
               >
 
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-green-400">
@@ -274,6 +244,7 @@ export default function Footer() {
           </div>
 
         </div>
+
 
         {/* =====================================================
             CTA
@@ -316,6 +287,7 @@ export default function Footer() {
 
         </div>
 
+
         {/* =====================================================
             SECURITY
         ===================================================== */}
@@ -336,6 +308,7 @@ export default function Footer() {
 
       </div>
 
+
       {/* =====================================================
           BOTTOM BAR
       ===================================================== */}
@@ -348,7 +321,7 @@ export default function Footer() {
             © 2026 Takshashila Academy. All rights reserved.
           </p>
 
-          <div className="flex justify-center gap-5 text-xs text-slate-500 sm:justify-end">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-500 sm:justify-end">
 
             <Link
               to="/privacy-policy"
@@ -362,6 +335,13 @@ export default function Footer() {
               className="transition hover:text-slate-300"
             >
               Terms & Conditions
+            </Link>
+
+            <Link
+              to="/refund-policy"
+              className="transition hover:text-slate-300"
+            >
+              Refund Policy
             </Link>
 
           </div>
@@ -387,24 +367,5 @@ function FooterLink({ to, text }) {
     >
       {text}
     </Link>
-  );
-}
-
-
-/* =========================================================
-   SOCIAL LINK
-========================================================= */
-
-function SocialLink({ href, icon, label }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
-    >
-      {icon}
-    </a>
   );
 }

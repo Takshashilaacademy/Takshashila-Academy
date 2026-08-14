@@ -5,18 +5,15 @@ import cloudinary from "../config/cloudinary.js";
 
    POST /api/admin/cloudinary/signature
 
-   Requires:
-   - Admin authentication middleware
-   - Active admin account
-
    IMPORTANT:
    - CLOUDINARY_API_SECRET is NEVER sent to frontend.
    - Course videos use authenticated delivery.
    - Course materials use authenticated delivery.
    - Thumbnails/images use normal upload delivery.
-   - Frontend cannot choose an arbitrary resource type.
-   - Frontend cannot choose an arbitrary folder.
+   - Frontend cannot choose arbitrary resource type.
+   - Frontend cannot choose arbitrary folder.
 ========================================================= */
+
 
 /* =========================================================
    ENVIRONMENT
@@ -31,6 +28,7 @@ const CLOUDINARY_CLOUD_NAME =
 const CLOUDINARY_API_KEY =
   process.env.CLOUDINARY_API_KEY;
 
+
 /* =========================================================
    CONSTANTS
 ========================================================= */
@@ -41,6 +39,7 @@ const ALLOWED_MEDIA_CATEGORIES = [
   "course-thumbnail",
   "image",
 ];
+
 
 const CATEGORY_CONFIG = {
   "course-video": {
@@ -54,6 +53,7 @@ const CATEGORY_CONFIG = {
       "takshashila-academy/courses/videos",
   },
 
+
   "course-material": {
     resourceType:
       "raw",
@@ -64,6 +64,7 @@ const CATEGORY_CONFIG = {
     folder:
       "takshashila-academy/courses/materials",
   },
+
 
   "course-thumbnail": {
     resourceType:
@@ -76,6 +77,7 @@ const CATEGORY_CONFIG = {
       "takshashila-academy/courses/images",
   },
 
+
   image: {
     resourceType:
       "image",
@@ -87,6 +89,7 @@ const CATEGORY_CONFIG = {
       "takshashila-academy/courses/images",
   },
 };
+
 
 /* =========================================================
    NORMALIZE STRING
@@ -105,15 +108,9 @@ const normalizeString = (
   return value.trim();
 };
 
+
 /* =========================================================
    VALIDATE ADMIN
-=========================================================
-
-   Normally adminAuth middleware should already protect
-   this route.
-
-   This additional controller-level check prevents accidental
-   exposure if the route is mounted without the middleware.
 ========================================================= */
 
 const validateAdmin = (
@@ -126,12 +123,14 @@ const validateAdmin = (
     return false;
   }
 
+
   if (
     req.admin.role !==
     "admin"
   ) {
     return false;
   }
+
 
   if (
     req.admin.isActive ===
@@ -140,8 +139,10 @@ const validateAdmin = (
     return false;
   }
 
+
   return true;
 };
+
 
 /* =========================================================
    CHECK CLOUDINARY CONFIG
@@ -151,10 +152,11 @@ const isCloudinaryConfigured =
   () => {
     return Boolean(
       CLOUDINARY_API_SECRET &&
-        CLOUDINARY_CLOUD_NAME &&
-        CLOUDINARY_API_KEY
+      CLOUDINARY_CLOUD_NAME &&
+      CLOUDINARY_API_KEY
     );
   };
+
 
 /* =========================================================
    GET CATEGORY CONFIG
@@ -168,6 +170,7 @@ const getCategoryConfig = (
       category
     ).toLowerCase();
 
+
   if (
     !ALLOWED_MEDIA_CATEGORIES.includes(
       normalizedCategory
@@ -175,6 +178,7 @@ const getCategoryConfig = (
   ) {
     return null;
   }
+
 
   return {
     category:
@@ -186,6 +190,7 @@ const getCategoryConfig = (
   };
 };
 
+
 /* =========================================================
    CREATE UPLOAD SIGNATURE
 ========================================================= */
@@ -196,6 +201,7 @@ export const createUploadSignature =
     res
   ) => {
     try {
+
       /* ===================================================
          ADMIN CHECK
       =================================================== */
@@ -216,6 +222,7 @@ export const createUploadSignature =
             "Active admin access is required.",
         });
       }
+
 
       /* ===================================================
          CLOUDINARY CONFIG CHECK
@@ -240,6 +247,7 @@ export const createUploadSignature =
         });
       }
 
+
       /* ===================================================
          REQUEST BODY
       =================================================== */
@@ -249,12 +257,9 @@ export const createUploadSignature =
           req.body?.category
         ).toLowerCase();
 
+
       /* ===================================================
-         CATEGORY IS REQUIRED
-         
-         We do NOT silently default to course-video.
-         This prevents an accidental upload from getting
-         the wrong security configuration.
+         CATEGORY REQUIRED
       =================================================== */
 
       if (
@@ -272,6 +277,7 @@ export const createUploadSignature =
         });
       }
 
+
       /* ===================================================
          CATEGORY CONFIG
       =================================================== */
@@ -280,6 +286,7 @@ export const createUploadSignature =
         getCategoryConfig(
           category
         );
+
 
       if (
         !config
@@ -296,11 +303,9 @@ export const createUploadSignature =
         });
       }
 
+
       /* ===================================================
-         COURSE MEDIA SECURITY
-         
-         Course videos and materials MUST remain
-         authenticated.
+         PROTECTED MEDIA
       =================================================== */
 
       const isProtectedMedia =
@@ -308,6 +313,7 @@ export const createUploadSignature =
           "course-video" ||
         category ===
           "course-material";
+
 
       if (
         isProtectedMedia &&
@@ -331,10 +337,9 @@ export const createUploadSignature =
         });
       }
 
+
       /* ===================================================
          TIMESTAMP
-         
-         Cloudinary signed uploads use a Unix timestamp.
       =================================================== */
 
       const timestamp =
@@ -343,13 +348,29 @@ export const createUploadSignature =
             1000
         );
 
+
       /* ===================================================
          SIGNED PARAMETERS
          
-         IMPORTANT:
+         IMPORTANT FIX
+         ----------------
          
-         Folder and type are controlled by the backend.
-         Frontend cannot override them.
+         For normal image uploads:
+         
+           type = upload
+         
+         is Cloudinary's normal default and your current
+         frontend uploader does NOT send `type`.
+
+         Therefore we DO NOT include `type` in the
+         signature for normal image uploads.
+
+         For protected media:
+         
+           type = authenticated
+         
+         IS explicitly signed because authenticated delivery
+         is part of the security configuration.
       =================================================== */
 
       const paramsToSign = {
@@ -357,13 +378,24 @@ export const createUploadSignature =
 
         folder:
           config.folder,
-
-        type:
-          config.deliveryType,
       };
 
+
       /* ===================================================
-         CREATE SIGNATURE
+         SIGN TYPE ONLY FOR AUTHENTICATED MEDIA
+      =================================================== */
+
+      if (
+        config.deliveryType ===
+        "authenticated"
+      ) {
+        paramsToSign.type =
+          config.deliveryType;
+      }
+
+
+      /* ===================================================
+         CREATE CLOUDINARY SIGNATURE
       =================================================== */
 
       const signature =
@@ -373,11 +405,45 @@ export const createUploadSignature =
           CLOUDINARY_API_SECRET
         );
 
+
+      /* ===================================================
+         DEBUG LOG
+         
+         Do NOT log API secret.
+         
+         These values are safe enough for server logs and
+         are useful for diagnosing future signature issues.
+      =================================================== */
+
+      console.log(
+        "Cloudinary Signature Created:",
+        {
+          category:
+            config.category,
+
+          resourceType:
+            config.resourceType,
+
+          deliveryType:
+            config.deliveryType,
+
+          folder:
+            config.folder,
+
+          timestamp,
+
+          signedParameters:
+            Object.keys(
+              paramsToSign
+            ),
+        }
+      );
+
+
       /* ===================================================
          RESPONSE
          
-         NEVER return:
-         CLOUDINARY_API_SECRET
+         NEVER return CLOUDINARY_API_SECRET
       =================================================== */
 
       return res.status(200).json({
@@ -409,13 +475,16 @@ export const createUploadSignature =
         isProtected:
           isProtectedMedia,
       });
+
     } catch (
       error
     ) {
+
       console.error(
         "Cloudinary Signature Error:",
         error
       );
+
 
       return res.status(500).json({
         success:
@@ -429,6 +498,7 @@ export const createUploadSignature =
       });
     }
   };
+
 
 /* =========================================================
    EXPORT CONFIGURATION

@@ -279,12 +279,12 @@ const buildPasswordResetUrl = (
   token
 ) => {
   const frontendUrl = String(
-  process.env.FRONTEND_URL ||
-    "http://localhost:5173"
-)
-  .split(",")[0]
-  .trim()
-  .replace(/\/+$/, "");
+    process.env.FRONTEND_URL ||
+      "https://takshashila-academy.onrender.com"
+  )
+    .split(",")[0]
+    .trim()
+    .replace(/\/+$/, "");
 
   return `${frontendUrl}/reset-password?token=${encodeURIComponent(
     token

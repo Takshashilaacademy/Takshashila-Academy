@@ -4,15 +4,30 @@
 
 const rawApiUrl =
   import.meta.env.VITE_API_URL ||
-  "http://172.20.84.121:5000";
+  "https://takshashila-academy-api.onrender.com";
+
+
+/* =========================================================
+   NORMALIZE API URL
+========================================================= */
 
 export const API_URL =
   String(rawApiUrl)
     .trim()
     .replace(/\/+$/, "");
 
+
+/* =========================================================
+   API BASE
+========================================================= */
+
 export const API_BASE =
   `${API_URL}/api`;
+
+
+/* =========================================================
+   API URL HELPER
+========================================================= */
 
 export const apiUrl = (path = "") => {
   const normalizedPath =
@@ -22,5 +37,10 @@ export const apiUrl = (path = "") => {
 
   return `${API_URL}${normalizedPath}`;
 };
+
+
+/* =========================================================
+   DEFAULT EXPORT
+========================================================= */
 
 export default API_URL;

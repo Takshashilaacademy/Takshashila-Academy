@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { API_URL } from "../config/api.js";
 import { useNavigate } from "react-router-dom";
+
 import {
   Eye,
   EyeOff,
@@ -46,46 +47,66 @@ export default function AdminLogin() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (loading) {
+      return;
+    }
+
     setErrorMessage("");
 
     const email = formData.email.trim().toLowerCase();
     const password = formData.password;
 
-    if (!email || !password) {
-      setErrorMessage("Email and password are required.");
+    /* =======================================================
+       VALIDATION
+    ======================================================= */
+
+    if (!email) {
+      setErrorMessage("Admin email is required.");
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage("Admin password is required.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const controller = new AbortController();
-      const timeoutId = window.setTimeout(
-        () => controller.abort(),
-        15000
+      console.log("======================================");
+      console.log("ADMIN LOGIN REQUEST");
+      console.log("API URL:", API_URL);
+      console.log(
+        "Endpoint:",
+        `${API_URL}/api/admin/login`
+      );
+      console.log("Email:", email);
+      console.log("======================================");
+
+      /* =====================================================
+         LOGIN REQUEST
+      ===================================================== */
+
+      const response = await fetch(
+        `${API_URL}/api/admin/login`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
       );
 
-      let response;
-
-      try {
-        response = await fetch(
-          `${API_URL}/api/admin/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({
-              email,
-              password,
-            }),
-            signal: controller.signal,
-          }
-        );
-      } finally {
-        window.clearTimeout(timeoutId);
-      }
+      /* =====================================================
+         READ RESPONSE SAFELY
+      ===================================================== */
 
       const responseText = await response.text();
 
@@ -101,25 +122,93 @@ export default function AdminLogin() {
         };
       }
 
+      console.log(
+        "Admin Login HTTP Status:",
+        response.status
+      );
+
+      console.log(
+        "Admin Login Response:",
+        data
+      );
+
+      /* =====================================================
+         API ERROR
+      ===================================================== */
+
       if (!response.ok) {
+        if (response.status === 400) {
+          throw new Error(
+            data?.message ||
+              "Please check your admin login details."
+          );
+        }
+
+        if (response.status === 401) {
+          throw new Error(
+            data?.message ||
+              "Invalid admin email or password."
+          );
+        }
+
+        if (response.status === 403) {
+          throw new Error(
+            data?.message ||
+              "Admin access is not authorized."
+          );
+        }
+
+        if (response.status === 404) {
+          throw new Error(
+            data?.message ||
+              "Admin login endpoint was not found."
+          );
+        }
+
+        if (response.status >= 500) {
+          throw new Error(
+            data?.message ||
+              "Server error while logging in. Please check the backend."
+          );
+        }
+
         throw new Error(
-          data?.message || "Admin login failed."
+          data?.message ||
+            "Admin login failed."
+        );
+      }
+
+      /* =====================================================
+         VALIDATE AUTH RESPONSE
+      ===================================================== */
+
+      if (
+        typeof data?.token !== "string" ||
+        !data.token.trim()
+      ) {
+        throw new Error(
+          "Login succeeded, but authentication token was not returned by the server."
         );
       }
 
       if (
-        !data?.token ||
         !data?.admin ||
-        data.admin.role !== "admin"
+        typeof data.admin !== "object"
       ) {
         throw new Error(
-          "Invalid admin authentication response."
+          "Login succeeded, but admin account information was not returned."
         );
       }
 
-      /* -----------------------------------------------------
+      if (data.admin.role !== "admin") {
+        throw new Error(
+          "This account does not have administrator access."
+        );
+      }
+
+      /* =====================================================
          SAVE ADMIN AUTH DATA
-      ----------------------------------------------------- */
+      ===================================================== */
 
       localStorage.setItem(
         "takshashila_admin_token",
@@ -131,20 +220,47 @@ export default function AdminLogin() {
         JSON.stringify(data.admin)
       );
 
-      /* -----------------------------------------------------
-         REDIRECT
-      ----------------------------------------------------- */
+      /* =====================================================
+         SUCCESS
+      ===================================================== */
 
-      navigate("/admin/dashboard");
+      console.log(
+        "Admin login successful."
+      );
 
+      navigate(
+        "/admin/dashboard",
+        {
+          replace: true,
+        }
+      );
     } catch (error) {
-      console.error("Admin Login Error:", error);
+      console.error(
+        "Admin Login Error:",
+        error
+      );
+
+      /* =====================================================
+         NETWORK ERROR
+      ===================================================== */
+
+      if (
+        error instanceof TypeError
+      ) {
+        setErrorMessage(
+          "Unable to connect to the backend server. Please make sure the backend is running and API_URL is correct."
+        );
+
+        return;
+      }
+
+      /* =====================================================
+         NORMAL ERROR
+      ===================================================== */
 
       setErrorMessage(
-        error?.name === "AbortError"
-          ? "Login request timed out. Please try again."
-          : error?.message ||
-            "Unable to login. Please try again."
+        error?.message ||
+          "Unable to login. Please try again."
       );
     } finally {
       setLoading(false);
@@ -166,8 +282,18 @@ export default function AdminLogin() {
 
             <div className="text-center">
 
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#071b41] text-yellow-400 shadow-lg">
-                <ShieldCheck size={30} />
+              {/* =================================================
+                  TAKSHASHILA ACADEMY LOGO
+              ================================================= */}
+
+              <div className="mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl bg-[#071b41] p-2 shadow-lg shadow-blue-950/20">
+
+                <img
+                  src="/logo.jpeg"
+                  alt="Takshashila Academy"
+                  className="h-full w-full object-contain"
+                />
+
               </div>
 
               <h1 className="mt-5 text-2xl font-black text-[#071b41]">
@@ -199,7 +325,7 @@ export default function AdminLogin() {
               className="mt-8 space-y-5"
             >
 
-              {/* Email */}
+              {/* EMAIL */}
 
               <div>
 
@@ -234,7 +360,7 @@ export default function AdminLogin() {
 
               </div>
 
-              {/* Password */}
+              {/* PASSWORD */}
 
               <div>
 
@@ -295,7 +421,7 @@ export default function AdminLogin() {
 
               </div>
 
-              {/* Login */}
+              {/* LOGIN BUTTON */}
 
               <button
                 type="submit"
@@ -309,11 +435,13 @@ export default function AdminLogin() {
                       size={18}
                       className="animate-spin"
                     />
+
                     Signing In...
                   </>
                 ) : (
                   <>
                     Admin Login
+
                     <ArrowRight size={18} />
                   </>
                 )}

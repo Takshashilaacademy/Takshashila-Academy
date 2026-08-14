@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { API_URL } from "../config/api.js";
+import SEO from "../components/SEO.jsx";
 
 import {
   isStudentLoggedIn,
@@ -460,6 +461,18 @@ export default function Login() {
 
   return (
     <main className="min-h-[calc(100vh-72px)] overflow-hidden bg-slate-50">
+
+      {/* =================================================
+          LOGIN PAGE SEO
+      ================================================= */}
+
+      <SEO
+        title="Student Login"
+        description="Securely login to your Takshashila Academy student account and access purchased courses, recorded videos, notes and PDFs."
+        path="/login"
+      />
+
+
       {/* =================================================
           BACKGROUND DECORATION
       ================================================= */}

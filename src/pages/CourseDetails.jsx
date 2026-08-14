@@ -44,6 +44,8 @@ import {
   API_URL,
 } from "../config/api.js";
 
+import SEO from "../components/SEO.jsx";
+
 
 /* =========================================================
    DEFAULT FEATURES
@@ -878,6 +880,20 @@ export default function CourseDetails() {
 
   return (
     <main className="min-h-screen bg-[#f7f9fc] pb-24 lg:pb-0">
+
+      {/* =================================================
+          COURSE PAGE SEO
+      ================================================= */}
+
+      <SEO
+        title={`${course.title} | Takshashila Academy`}
+        description={
+          course.description ||
+          course.fullDescription ||
+          `Join ${course.title} at Takshashila Academy and access structured video classes, notes and secure student learning resources.`
+        }
+        path={`/course/${courseId}`}
+      />
 
       {/* =================================================
           HERO

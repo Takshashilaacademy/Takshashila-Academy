@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://takshashila-academy.onrender.com/sitemap.xml
