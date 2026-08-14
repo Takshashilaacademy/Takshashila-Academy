@@ -52,10 +52,8 @@ const isValidHttpUrl = (
 
 /* ---------------------------------------------------------
    CLOUDINARY URL VALIDATOR
----------------------------------------------------------
 
-Used only for protected media fields.
-
+   Used only for protected media fields.
 ========================================================= */
 
 const isCloudinaryUrl = (
@@ -780,20 +778,22 @@ courseSchema.set(
 
 /* =========================================================
    PRE-VALIDATE COUNTERS
-=========================================================
 
-IMPORTANT:
+   IMPORTANT:
 
-Only PUBLISHED lessons/materials are counted.
+   Only PUBLISHED lessons/materials are counted.
 
-This keeps the counters consistent with the public
-course API and admin dashboard.
+   This keeps the counters consistent with the public
+   course API and admin dashboard.
 
+   IMPORTANT FIX:
+   This middleware uses promise-style execution.
+   Do NOT use next() here.
 ========================================================= */
 
 courseSchema.pre(
   "validate",
-  function (next) {
+  function () {
     /* -----------------------------------------------------
        TOTAL PUBLISHED VIDEOS
     ----------------------------------------------------- */
@@ -834,15 +834,12 @@ courseSchema.pre(
 
     /* -----------------------------------------------------
        TOTAL TESTS
-    -----------------------------------------------------
 
        Tests will have their own system.
 
        Therefore totalTests is intentionally NOT
        automatically calculated here.
     ----------------------------------------------------- */
-
-    next();
   }
 );
 
