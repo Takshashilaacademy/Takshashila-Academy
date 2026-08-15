@@ -32,19 +32,17 @@ const MAX_DOCUMENT_BYTES =
 /* =========================================================
    CHUNK SIZE
 
-   20 MB is a good balance between:
+   5 MB keeps each request below the current 10 MB
+   limit shown by Cloudinary in your browser.
 
-   - Upload speed
-   - Browser memory
-   - Network reliability
-   - Number of requests
-
-   Cloudinary supports chunked uploads and requires chunks
-   larger than 5 MB except for the final chunk.
+   This is especially important for your 20+ MB PDFs
+   and long 1-2 hour videos. The browser sends the file
+   directly to Cloudinary in small chunks; Render does not
+   receive the actual file data.
 ========================================================= */
 
 const CHUNK_SIZE =
-  20 * 1024 * 1024; // 20 MB
+  5 * 1024 * 1024; // 5 MB
 
 /* =========================================================
    SIGNATURE REFRESH
