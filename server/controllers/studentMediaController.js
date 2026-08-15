@@ -17,12 +17,91 @@ const ALLOWED_MEDIA_TYPES = [
 ];
 
 /* =========================================================
+   NORMALIZE MEDIA TYPE
+
+   Supports BOTH route styles:
+
+   1. /media/:mediaType/:mediaId
+
+   2. /media/video/:mediaId
+      /media/material/:mediaId
+
+   Your current router uses the second style.
+========================================================= */
+
+const getRequestedMediaType = (
+  req
+) => {
+  const directMediaType =
+    String(
+      req.params?.mediaType || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  /* -------------------------------------------------------
+     If :mediaType exists, use it.
+  ------------------------------------------------------- */
+
+  if (
+    ALLOWED_MEDIA_TYPES.includes(
+      directMediaType
+    )
+  ) {
+    return directMediaType;
+  }
+
+  /* -------------------------------------------------------
+     Current route style:
+
+     /courses/:courseId/media/video/:mediaId
+     /courses/:courseId/media/material/:mediaId
+
+     Detect media type from request path.
+  ------------------------------------------------------- */
+
+  const path = String(
+    req.path ||
+      req.originalUrl ||
+      ""
+  ).toLowerCase();
+
+  if (
+    path.includes(
+      "/media/video/"
+    )
+  ) {
+    return "video";
+  }
+
+  if (
+    path.includes(
+      "/media/material/"
+    )
+  ) {
+    return "material";
+  }
+
+  return "";
+};
+
+/* =========================================================
    GET PROTECTED COURSE MEDIA URL
 
    GET
+
+   Current supported routes:
+
+   /api/student/courses/:courseId/media/video/:mediaId
+
+   /api/student/courses/:courseId/media/material/:mediaId
+
+   Also supports:
+
    /api/student/courses/:courseId/media/:mediaType/:mediaId
 
    Requires:
+
    - Valid student JWT
    - Active student
    - Published course
@@ -32,14 +111,15 @@ const ALLOWED_MEDIA_TYPES = [
 
    IMPORTANT:
 
-   The frontend supplies ONLY:
+   Frontend supplies ONLY:
+
    - courseId
-   - mediaType
    - mediaId
+   - media type through route
 
-   The frontend NEVER supplies the Cloudinary public ID.
+   Frontend NEVER supplies Cloudinary public ID.
 
-   The backend gets the actual Cloudinary public ID from
+   Backend gets the actual Cloudinary public ID from
    the trusted Course document.
 ========================================================= */
 
@@ -88,12 +168,32 @@ export const getProtectedMediaUrl =
          PARAMS
       =================================================== */
 
-      const {
-        courseId,
-        mediaType,
-        mediaId,
-      } =
-        req.params;
+      const courseId =
+        req.params?.courseId;
+
+      const mediaId =
+        req.params?.mediaId;
+
+      /*
+       * IMPORTANT FIX
+       *
+       * Your current router does NOT contain:
+       *
+       * :mediaType
+       *
+       * It uses:
+       *
+       * /media/video/:mediaId
+       * /media/material/:mediaId
+       *
+       * Therefore media type is detected safely from
+       * the request path.
+       */
+
+      const mediaType =
+        getRequestedMediaType(
+          req
+        );
 
       /* ===================================================
          COURSE ID
@@ -144,6 +244,20 @@ export const getProtectedMediaUrl =
           mediaType
         )
       ) {
+        console.error(
+          "Invalid media type request:",
+          {
+            path:
+              req.path,
+
+            originalUrl:
+              req.originalUrl,
+
+            params:
+              req.params,
+          }
+        );
+
         return res.status(400).json({
           success: false,
 
@@ -190,15 +304,14 @@ export const getProtectedMediaUrl =
       /* ===================================================
          VERIFY PAID PURCHASE
 
-         IMPORTANT:
+         NEVER TRUST:
 
-         Never trust:
          - frontend hasAccess
          - localStorage
-         - course ownership in frontend
-         - payment status sent by frontend
+         - frontend ownership
+         - payment status from frontend
 
-         Database is the final authority.
+         Database is final authority.
       =================================================== */
 
       const purchase =
@@ -255,7 +368,7 @@ export const getProtectedMediaUrl =
           Date.now()
       ) {
         /*
-         * Immediately revoke the active entitlement.
+         * Immediately revoke expired entitlement.
          */
 
         await Purchase.updateOne(
@@ -296,21 +409,14 @@ export const getProtectedMediaUrl =
 
       /* ===================================================
          FIND REQUESTED MEDIA
-
-         IMPORTANT:
-
-         The media ID is checked against the requested
-         course itself.
-
-         This prevents:
-
-         Course A + Media ID from Course B
-         
-         from generating a URL.
       =================================================== */
 
       let media =
         null;
+
+      /* ===================================================
+         VIDEO
+      =================================================== */
 
       if (
         mediaType ===
@@ -325,13 +431,18 @@ export const getProtectedMediaUrl =
                   lesson
                 ) =>
                   lesson &&
-                  lesson._id?.toString() ===
+                  lesson._id
+                    ?.toString() ===
                     mediaId &&
                   lesson.isPublished !==
                     false
               )
             : null;
       }
+
+      /* ===================================================
+         MATERIAL
+      =================================================== */
 
       if (
         mediaType ===
@@ -346,7 +457,8 @@ export const getProtectedMediaUrl =
                   material
                 ) =>
                   material &&
-                  material._id?.toString() ===
+                  material._id
+                    ?.toString() ===
                     mediaId &&
                   material.isPublished !==
                     false
@@ -373,8 +485,14 @@ export const getProtectedMediaUrl =
       /* ===================================================
          GET CLOUDINARY PUBLIC ID
 
-         NEVER ACCEPT THIS VALUE FROM req.body,
-         req.query OR req.params.
+         NEVER accept this from:
+
+         - req.body
+         - req.query
+         - frontend
+         - URL query parameters
+
+         Always use trusted Course document.
       =================================================== */
 
       const publicId =
@@ -382,6 +500,10 @@ export const getProtectedMediaUrl =
         "video"
           ? media.videoPublicId
           : media.filePublicId;
+
+      /* ===================================================
+         PUBLIC ID VALIDATION
+      =================================================== */
 
       if (
         typeof publicId !==
@@ -403,6 +525,9 @@ export const getProtectedMediaUrl =
         });
       }
 
+      const normalizedPublicId =
+        publicId.trim();
+
       /* ===================================================
          RESOURCE TYPE
       =================================================== */
@@ -414,35 +539,47 @@ export const getProtectedMediaUrl =
           : "raw";
 
       /* ===================================================
-         FILE FORMAT
+         FORMAT
 
-         Cloudinary raw PDF resources may require the
-         explicit PDF format.
+         IMPORTANT PDF FIX
+
+         Your Cloudinary PDF public ID already contains
+         the .pdf extension.
+
+         Example:
+
+         courses/materials/example.pdf
+
+         If we send:
+
+         format: "pdf"
+
+         Cloudinary can generate:
+
+         example.pdf.pdf
+
+         which causes:
+
+         HTTP 404
+
+         Therefore:
+
+         DO NOT send format for raw materials.
+
+         The stored public ID is used exactly as it is.
       =================================================== */
 
-      let format;
-
-      if (
-        mediaType ===
-          "material" &&
-        String(
-          media.fileType ||
-            ""
-        ).toLowerCase() ===
-          "pdf"
-      ) {
-        format =
-          "pdf";
-      }
+      const format =
+        undefined;
 
       /* ===================================================
-         CREATE AUTHENTICATED MEDIA URL
+         CREATE AUTHENTICATED CLOUDINARY URL
       =================================================== */
 
       const signedUrl =
         createAuthenticatedMediaUrl({
           publicId:
-            publicId.trim(),
+            normalizedPublicId,
 
           resourceType,
 
@@ -459,7 +596,11 @@ export const getProtectedMediaUrl =
         !signedUrl.trim()
       ) {
         console.error(
-          "Cloudinary authenticated media URL generation returned an invalid URL."
+          "Cloudinary authenticated media URL generation returned an invalid URL.",
+          {
+            mediaType,
+            resourceType,
+          }
         );
 
         return res.status(500).json({
@@ -474,13 +615,46 @@ export const getProtectedMediaUrl =
       }
 
       /* ===================================================
+         DEBUG LOG
+
+         Does NOT expose Cloudinary secret.
+
+         Useful for checking whether PDF/video URL
+         generation is correct.
+      =================================================== */
+
+      console.log(
+        "Protected media URL generated:",
+        {
+          mediaType,
+
+          resourceType,
+
+          mediaId,
+
+          courseId,
+
+          hasUrl:
+            Boolean(
+              signedUrl
+            ),
+
+          publicIdHasPdfExtension:
+            /\.pdf$/i.test(
+              normalizedPublicId
+            ),
+        }
+      );
+
+      /* ===================================================
          RESPONSE
 
-         Do not expose:
-         - Cloudinary public ID
+         Do NOT expose:
+
          - payment ID
          - payment signature
-         - internal purchase fields
+         - internal purchase data
+         - Cloudinary API secret
       =================================================== */
 
       return res.status(200).json({
@@ -526,14 +700,18 @@ export const getProtectedMediaUrl =
         },
       });
     } catch (error) {
+      /* ===================================================
+         SERVER ERROR LOG
+      =================================================== */
+
       console.error(
         "Get Protected Media URL Error:",
         error
       );
 
-      /* =================================================
+      /* ===================================================
          INVALID OBJECT ID
-      ================================================= */
+      =================================================== */
 
       if (
         error?.name ===
@@ -550,9 +728,9 @@ export const getProtectedMediaUrl =
         });
       }
 
-      /* =================================================
+      /* ===================================================
          SERVER ERROR
-      ================================================= */
+      =================================================== */
 
       return res.status(500).json({
         success: false,
