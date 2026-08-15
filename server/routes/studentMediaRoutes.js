@@ -10,37 +10,36 @@ import {
 
 /* =========================================================
    STUDENT PROTECTED MEDIA ROUTER
+
+   Handles:
+
+   VIDEO:
+   /api/student/courses/:courseId/media/video/:mediaId
+
+   MATERIAL:
+   /api/student/courses/:courseId/media/material/:mediaId
+
+   The route uses :mediaType so the controller receives:
+
+   req.params.mediaType
+
+   as:
+
+   "video"
+   or
+   "material"
 ========================================================= */
 
 const router =
   express.Router();
 
 /* =========================================================
-   GET PROTECTED VIDEO URL
+   GET PROTECTED MEDIA URL
 
-   GET
-   /api/student/courses/:courseId/media/video/:mediaId
+   Supported media types:
 
-   Requires:
-   - Valid student JWT
-   - Active student
-   - Published course
-   - Paid purchase
-   - Active purchase
-
-========================================================= */
-
-router.get(
-  "/courses/:courseId/media/video/:mediaId",
-  protect,
-  getProtectedMediaUrl
-);
-
-/* =========================================================
-   GET PROTECTED MATERIAL URL
-
-   GET
-   /api/student/courses/:courseId/media/material/:mediaId
+   video
+   material
 
    Requires:
    - Valid student JWT
@@ -48,11 +47,10 @@ router.get(
    - Published course
    - Paid purchase
    - Active purchase
-
 ========================================================= */
 
 router.get(
-  "/courses/:courseId/media/material/:mediaId",
+  "/courses/:courseId/media/:mediaType/:mediaId",
   protect,
   getProtectedMediaUrl
 );
